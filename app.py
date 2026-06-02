@@ -2,39 +2,30 @@ import streamlit as st
 import google.generativeai as genai
 from PIL import Image
 
-# 1. Настройка страницы приложения
+# Настройка страницы приложения
 st.set_page_config(page_title="Умный ИИ-Помощник", layout="centered")
 st.title("📸 Моментальный ИИ-Помощник")
 st.write("Сделай фото через камеру, и ИИ сразу решит твою задачу!")
 
-# 2. Подключение «мозгов» ИИ
-# Замени 'ТВОЙ_API_КЛЮЧ' на настоящий ключ, который получишь в Google AI Studio
-API_KEY = 'ТВОЙ_API_КЛЮЧ' 
+# Твой личный ключ, который ты только что скопировал!
+API_KEY = 'AIzaSyD3b5G3TEufAfto5GRIzBPNhninFZz7RI4' 
 genai.configure(api_key=API_KEY)
 
-# Используем быструю и умную модель Gemini Flash
 model = genai.GenerativeModel('gemini-1.5-flash')
 
-# 3. Включаем камеру прямо в браузере
+# Включаем камеру
 img_file = st.camera_input("Наведи камеру на задачу и сделай снимок")
-
-# Поле для ввода текстового вопроса (опционально)
 user_prompt = st.text_input("Что нужно сделать?", "Реши и объясни, что на фото.")
 
-# 4. Обработка фото без задержек
+# Обработка фото
 if img_file is not None:
-    # Открываем снимок как картинку
     image = Image.open(img_file)
     st.image(image, caption="Фото загружено!", use_column_width=True)
     
     with st.spinner("🧠 ИИ думает..."):
         try:
-            # Отправляем фото и текст в нейросеть
             response = model.generate_content([user_prompt, image])
-            
-            # Выводим ответ на экран
             st.success("Ответ ИИ:")
             st.write(response.text)
-            
         except Exception as e:
             st.error(f"Ошибка соединения с ИИ: {e}")
