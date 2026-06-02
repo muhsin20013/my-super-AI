@@ -2,7 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 from PIL import Image
 
-# 1. Настройка страницы и новой иконки мозга 🧠
+# 1. Настройка страницы и иконки мозга 🧠
 st.set_page_config(page_title="Умный ИИ-Помощник", page_icon="🧠", layout="centered")
 
 # Кастомный CSS для красивого тёмного интерфейса
@@ -30,12 +30,9 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 2. Подключение нейросети через твои секреты
-try:
-    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-    model = genai.GenerativeModel('gemini-1.5-flash')
-except Exception as e:
-    st.error("Ошибка подключения API-ключа. Проверь Advanced Settings в Streamlit.")
+# 2. Подключение нейросети (напрямую, без блокировки переменной)
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 # 3. Интерфейс приложения
 st.write("### 🧠 Мой Кибер-Мозг")
@@ -74,6 +71,6 @@ if st.button("🧠 Запустить анализ"):
                 st.markdown("---")
                 
             except Exception as e:
-                st.error(f"Произошла ошибка при обращении к ИИ: {e}")
+                st.error(f"Произошла ошибка при получении ответа: {e}")
     else:
         st.warning("⚠️ Пожалуйста, напиши что-нибудь или сделай снимок!")
