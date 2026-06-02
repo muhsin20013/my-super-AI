@@ -2,10 +2,10 @@ import streamlit as st
 import google.generativeai as genai
 from PIL import Image
 
-# 1. Настройка страницы и стилей
-st.set_page_config(page_title="ИИ Решатель", page_icon="🤖", layout="centered")
+# 1. Настройка страницы и новой иконки мозга 🧠
+st.set_page_config(page_title="Умный ИИ-Помощник", page_icon="🧠", layout="centered")
 
-# Кастомный CSS для красивого интерфейса (как у тебя и было)
+# Кастомный CSS для красивого тёмного интерфейса
 st.markdown("""
     <style>
     .stApp {
@@ -28,9 +28,9 @@ st.markdown("""
         border: none;
     }
     </style>
-""", unsafe_index=True)
+""", unsafe_allow_html=True)
 
-# 2. Подключение нейросети через твои секреты (st.secrets)
+# 2. Подключение нейросети через твои секреты
 try:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
     model = genai.GenerativeModel('gemini-1.5-flash')
@@ -38,19 +38,20 @@ except Exception as e:
     st.error("Ошибка подключения API-ключа. Проверь Advanced Settings в Streamlit.")
 
 # 3. Интерфейс приложения
-st.write("### 🤖 Сделай фото через камеру или просто напиши текст, и ИИ решит твою задачу!")
+st.write("### 🧠 Мой Кибер-Мозг")
+st.write("Напиши мне вопрос или покажи задачу через камеру — я всё проанализирую!")
 
 # Поле для камеры
-img_file = st.camera_input("Наведи камеру на задачу и сделай снимок")
+img_file = st.camera_input("📸 Отправить снимок в ИИ")
 
 # Поле для текста
-user_text = st.text_input("Что нужно сделать?", placeholder="Напиши текст задачи или вопрос к фото сюда...")
+user_text = st.text_input("✍️ Что нужно решить или объяснить?", placeholder="Введи текст или вопрос к фотографии...")
 
 # Кнопка запуска
-if st.button("🚀 Решить задачу"):
+if st.button("🧠 Запустить анализ"):
     # Проверяем, передал ли пользователь хоть что-то
     if img_file is not None or user_text.strip() != "":
-        with st.spinner("🔮 Нейросеть думает и генерирует ответ..."):
+        with st.spinner("🔮 Нейроны ИИ обрабатывают запрос..."):
             try:
                 # Сценарий 1: Отправляем И фото, И текст
                 if img_file is not None and user_text.strip() != "":
@@ -67,7 +68,7 @@ if st.button("🚀 Решить задачу"):
                     response = model.generate_content(user_text)
                 
                 # Вывод ответа на экран
-                st.success("✨ Ответ готов!")
+                st.success("✨ Анализ завершен!")
                 st.markdown("---")
                 st.write(response.text)
                 st.markdown("---")
@@ -75,4 +76,4 @@ if st.button("🚀 Решить задачу"):
             except Exception as e:
                 st.error(f"Произошла ошибка при обращении к ИИ: {e}")
     else:
-        st.warning("⚠️ Пожалуйста, напиши текст задачи или сделай снимок экрана!")
+        st.warning("⚠️ Пожалуйста, напиши что-нибудь или сделай снимок!")
