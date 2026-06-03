@@ -2,10 +2,10 @@ import streamlit as st
 import google.generativeai as genai
 from PIL import Image
 
-# 1. Настройка страницы (Название и иконка мозга 🧠 на вкладке)
-st.set_page_config(page_title="Умный ИИ-Помощник", page_icon="🧠", layout="centered")
+# 1. Настройка страницы (Название вкладки и иконка мозга)
+st.set_page_config(page_title="ИИ Помощник", page_icon="🧠", layout="centered")
 
-# Кастомный CSS для тёмной темы
+# Кастомный CSS для тёмной темы и красивой кнопки
 st.markdown("""
     <style>
     .stApp {
@@ -30,58 +30,55 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 2. Безопасное подключение ключа
-api_key = None
+# 2. Подключение ИИ напрямую из скрытых настроек (Secrets)
+# Здесь мы добавляем системную инструкцию, чтобы робот знал твоё имя!
+try:
+    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+    
+    # ТУТ НАСТРОЙКА ИМЕНИ: Замени "Мухсин" на своё имя, если нужно!
+    system_instruction = "Ты — продвинутый ИИ-помощник. Тебя зовут Мухсин. Твоя задача — помогать решать задачи и отвечать на вопросы."
+    
+    model = genai.GenerativeModel(
+        model_name='gemini-1.5-flash',
+        system_instruction=system_instruction
+    )
+except Exception as e:
+    st.error("Ошибка: Ключ не найден в настройках Secrets. Пропиши его в панели Manage app.")
 
-# Сначала пытаемся взять ключ из скрытых настроек (Secrets)
-if "GEMINI_API_KEY" in st.secrets:
-    api_key = st.secrets["GEMINI_API_KEY"]
+# 3. Интерфейс для обычных пользователей (никаких полей для ключа!)
+st.write("### 🧠 Твой умный ИИ-помощник")
+st.write("Напиши текст или сделай снимок — я помогу тебе во всём разобраться!")
 
-# Интерфейс приложения
-st.write("### 🧠 Мой Кибер-Мозг")
-st.write("Напиши мне вопрос или покажи задачу через камеру — я всё проанализирую!")
-
-# Если ключа нет в настройках, просим ввести его прямо на сайте
-if not api_key:
-    st.info("🔑 Ключ не найден в настройках Streamlit. Ты можешь временно ввести его ниже:")
-    api_key = st.text_input("Вставь свой GEMINI_API_KEY сюда:", type="password")
-
-# Поля для ввода задачи
-img_file = st.camera_input("📸 Отправить снимок в ИИ")
-user_text = st.text_input("✍️ Что нужно решить или объяснить?", placeholder="Введи текст или вопрос к фотографии...")
+# Поля ввода
+img_file = st.camera_input("📸 Сделать снимок задачи")
+user_text = st.text_input("✍️ Твой вопрос или задание:", placeholder="Напиши сюда то, что нужно решить...")
 
 # Кнопка запуска
 if st.button("🧠 Запустить анализ"):
-    if not api_key:
-        st.error("❌ Без API-ключа нейросеть не сможет ответить. Пожалуйста, введи ключ!")
-    elif img_file is not None or user_text.strip() != "":
+    if img_file is not None or user_text.strip() != "":
         with st.spinner("🔮 Нейроны ИИ обрабатывают запрос..."):
             try:
-                # Настраиваем модель прямо перед запуском
-                genai.configure(api_key=api_key)
-                model = genai.GenerativeModel('gemini-1.5-flash')
-                
-                # Сценарий 1: И фото, И текст
+                # Сценарий 1: Отправляем И фото, И текст
                 if img_file is not None and user_text.strip() != "":
                     img = Image.open(img_file)
                     response = model.generate_content([user_text, img])
                 
-                # Сценарий 2: ТОЛЬКО фото
+                # Сценарий 2: Отправляем ТОЛЬКО фото
                 elif img_file is not None:
                     img = Image.open(img_file)
                     response = model.generate_content(["Внимательно посмотри на фото и подробно реши/объясни то, что там изображено.", img])
                 
-                # Сценарий 3: ТОЛЬКО текст
+                # Сценарий 3: Отправляем ТОЛЬКО текст
                 else:
                     response = model.generate_content(user_text)
                 
-                # Вывод ответа
-                st.success("✨ Анализ завершен!")
+                # Вывод ответа на экран
+                st.success("✨ Ответ готов!")
                 st.markdown("---")
                 st.write(response.text)
                 st.markdown("---")
                 
             except Exception as e:
-                st.error(f"Произошла ошибка при получении ответа от ИИ: {e}")
+                st.error(f"Произошла ошибка: {e}")
     else:
-        st.warning("⚠️ Пожалуйста, напиши что-нибудь в поле или сделай снимок камеры!")
+        st.warning("⚠️ Пожалуйста, напиши текст или сделай снимок!")
